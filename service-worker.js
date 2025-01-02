@@ -1,11 +1,11 @@
 const CACHE_NAME = "habit-tracker-cache-v1";
 const urlsToCache = [
-  "/",
-  "/index.html",
-  "/manifest.json",
-  "/icons/128x128.ico",
-  "/icons/512x512.ico",
-  "/styles.css" // Ganti dengan file CSS Anda
+  "/trackers/",
+  "/trackers/index.html",
+  "/trackers/manifest.json",
+  "/trackers/icons/128x128.ico",
+  "/trackers/icons/512x512.ico",
+  "/trackers/styles.css" // Ganti dengan file CSS Anda
 ];
 
 // Install Service Worker
