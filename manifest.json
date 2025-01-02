@@ -4,14 +4,14 @@
   "description": "A web app to track habits and income.",
   "icons": [
     {
-      "src": "/icons/128x128.png",
+      "src": "/icons/128x128.ico",
       "sizes": "128x128",
-      "type": "image/png"
+      "type": "image/x-icon"
     },
     {
-      "src": "/icons/512x512.png",
+      "src": "/icons/512x512.ico",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/x-icon"
     }
   ],
   "start_url": "/index.html",
