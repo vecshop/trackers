@@ -3,10 +3,9 @@ const urlsToCache = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/icons/128x128.png",
-  "/icons/512x512.png",
-  "/styles.css", // Ganti dengan file CSS Anda
-  "/script.js", // Ganti dengan file JavaScript Anda
+  "/icons/128x128.ico",
+  "/icons/512x512.ico",
+  "/styles.css" // Ganti dengan file CSS Anda
 ];
 
 // Install Service Worker
