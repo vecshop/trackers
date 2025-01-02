@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Habit & Income Tracker</title>
+    <link
+      rel="icon"
+      href="https://cdn-icons-png.flaticon.com/512/1047/1047711.png"
+      type="image/png"
+    />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root {
+        --primary-color: #26282b;
+        --btn-color: #1d3be6;
+        --card-bg: #f4f4f4;
+        --secondary-color: #533483;
+        --shadow-color: rgba(0, 0, 0, 0.2);
+        --accent-color: #e94560;
+        --digital-color: #006363;
+        --background-color: #f4f4f4;
+        --hover-color: #2a2b32;
+      }
+
+      body.dark-mode {
+        --primary-color: #3e5bff;
+        --secondary-color: #1d3be6;
+        --btn-color: #3e5bff;
+        --digital-color: #64ffff;
+        --background-color: #343541;
+        --card-bg: #444654;
+        --text-color: #ffffff;
+        --border-color: #565869;
+        --hover-color: #2a2b32;
+        --shadow-color: rgba(0, 0, 0, 0.2);
+        --pricing-full-free: #3cd682;
+        --pricing-free-credits: #2da0ff;
+        --pricing-free-limits: #0734ff;
+        --pricing-paid: #f4b836;
+      }
+
+      body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        font-family: "Inter", sans-serif;
+      }
+
+      .card {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        box-shadow: 0 4px 6px var(--shadow-color);
+        color: var(--text-color);
+        border-radius: 10px;
+      }
+
+      .modal-content {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        box-shadow: 0 4px 6px var(--shadow-color);
+        color: var(--text-color);
+        border-radius: 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+        scrollbar-width: none;
+        scrollbar-color: transparent transparent;
+      }
+
+      .modal {
+        scrollbar-color: transparent transparent;
+        scrollbar-width: none;
+      }
+
+      .table-responsive th,
+      .table-responsive td {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+      }
+
+      .habit-card p,
+      .btn-close {
+        color: var(--text-color);
+      }
+
+      .nav-tabs .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .btn-primary {
+        background-color: var(--btn-color);
+        border-color: var(--primary-color);
+      }
+
+      .btn-primary.dark-mode {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+
+      .btn-primary:hover {
+        background-color: var(--hover-color);
+      }
+
+      .habit-card,
+      .todo-card {
+        background: var(--card-bg);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 10px;
+        color: var(--text-color);
+        box-shadow: 0 4px 6px var(--shadow-color);
+      }
+
+      .checkbox-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .day-checkbox {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .day-checkbox.checked {
+        background-color: var(--accent-color);
+        color: white;
+      }
+
+      .wishlist-card {
+        width: 200px;
+        margin: 10px;
+      }
+
+      .wishlist-image {
+        height: 150px;
+        object-fit: cover;
+      }
+
+      .expense-type-card {
+        cursor: pointer;
+        width: 120px;
+        border: 1px solid var(--border-color);
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .expense-type-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .expense-type-card.selected {
+        border-color: var(--primary-color);
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      #totalBalance {
+        font-family: "Digital-7 Mono", monospace;
+        font-size: 2rem;
+        color: var(--text-color);
+        transition: transform 0.3s ease-in-out;
+      }
+
+      #totalBalance.animated {
+        transform: scale(1.08);
+        color: var(--digital-color);
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 10px;
+        }
+      }
+    </style>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/service-worker.js")
+            .then((registration) => {
+              console.log(
+                "Service Worker registered with scope:",
+                registration.scope
+              );
+            })
+            .catch((error) => {
+              console.error("Service Worker registration failed:", error);
+            });
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <!-- Verify Access Check -->
+    <script>
+      if (!sessionStorage.getItem("verified")) {
+        window.location.href = "verify.html";
+      }
+    </script>
+
+    <div class="container py-4">
+      <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="dashboard-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#dashboard"
+            type="button"
+          >
+            Dashboard
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="habits-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#habits"
+            type="button"
+          >
+            Habits
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="todos-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#todos"
+            type="button"
+          >
+            To-Do List
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="income-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#income"
+            type="button"
+          >
+            Income
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="settings-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#settings"
+            type="button"
+          >
+            Settings
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="myTabContent">
+        <!-- Dashboard Tab -->
+        <div class="tab-pane fade show active" id="dashboard">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Monthly Analytics</h5>
+                  <canvas id="monthlyChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Income vs Expenses</h5>
+                  <canvas id="incomeChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-4">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Recent Transactions</h5>
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Type</th>
+                          <th>Amount</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody id="dashboardHistoryTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Habits Tab -->
+        <div class="tab-pane fade" id="habits">
+          <button
+            class="btn btn-primary mb-3"
+            data-bs-toggle="modal"
+            data-bs-target="#habitModal"
+          >
+            Add New Habit
+          </button>
+          <div id="habitsContainer"></div>
+        </div>
+
+        <!-- Todos Tab -->
+        <div class="tab-pane fade" id="todos">
+          <button
+            class="btn btn-primary mb-3"
+            data-bs-toggle="modal"
+            data-bs-target="#todoModal"
+          >
+            Add New Todo
+          </button>
+          <div id="todosContainer"></div>
+        </div>
+
+        <!-- Income Tab -->
+        <div class="tab-pane fade" id="income">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Total Balance</h5>
+                  <h2 id="totalBalance">Rp 0</h2>
+                  <div class="btn-group">
+                    <button
+                      class="btn btn-success"
+                      data-bs-toggle="modal"
+                      data-bs-target="#incomeModal"
+                    >
+                      Add Income
+                    </button>
+                    <button
+                      class="btn btn-danger"
+                      data-bs-toggle="modal"
+                      data-bs-target="#expenseModal"
+                    >
+                      Add Expense
+                    </button>
+                    <button
+                      class="btn btn-info"
+                      data-bs-toggle="modal"
+                      data-bs-target="#historyModal"
+                    >
+                      View History
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Wishlist</h5>
+                  <button
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#wishlistModal"
+                  >
+                    Add Wishlist Item
+                  </button>
+                  <div
+                    id="wishlistContainer"
+                    class="d-flex flex-wrap mt-3"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Tab Settings -->
+        <div class="tab-pane fade" id="settings">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Appearance</h5>
+              <div class="form-check form-switch">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="darkModeToggle"
+                />
+                <label class="form-check-label" for="darkModeToggle">
+                  Dark Mode
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Habit Modal -->
+    <div class="modal fade" id="habitModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add New Habit</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="habitForms"></div>
+            <button class="btn btn-secondary" id="addHabitForm">
+              <i class="bi bi-plus"></i> Add Another Habit
+            </button>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="saveHabits">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Todo Modal -->
+    <div class="modal fade" id="todoModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add New Todo</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="todoForms"></div>
+            <button class="btn btn-secondary" id="addTodoForm">
+              <i class="bi bi-plus"></i> Add Another Todo
+            </button>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="saveTodos">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Income Modal -->
+    <div class="modal fade" id="incomeModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add Income</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Amount (Rp)</label>
+              <input type="number" class="form-control" id="incomeAmount" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="saveIncome">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div class="modal fade" id="expenseModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add Expense</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Amount (Rp)</label>
+              <input type="number" class="form-control" id="expenseAmount" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Reason</label>
+              <input type="text" class="form-control" id="expenseReason" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Type</label>
+              <div id="expenseTypeOptions" class="d-flex flex-wrap gap-2">
+                <div class="card expense-type-card" data-value="food">
+                  <div class="card-body text-center">
+                    <i class="bi bi-egg-fried fs-3"></i>
+                    <p>Food</p>
+                  </div>
+                </div>
+                <div class="card expense-type-card" data-value="transport">
+                  <div class="card-body text-center">
+                    <i class="bi bi-truck fs-3"></i>
+                    <p>Transport</p>
+                  </div>
+                </div>
+                <div class="card expense-type-card" data-value="entertainment">
+                  <div class="card-body text-center">
+                    <i class="bi bi-film fs-3"></i>
+                    <p>Entertainment</p>
+                  </div>
+                </div>
+                <!-- Additional Categories -->
+                <div class="card expense-type-card" data-value="health">
+                  <div class="card-body text-center">
+                    <i class="bi bi-activity fs-3"></i>
+                    <p>Health</p>
+                  </div>
+                </div>
+                <div class="card expense-type-card" data-value="education">
+                  <div class="card-body text-center">
+                    <i class="bi bi-book fs-3"></i>
+                    <p>Education</p>
+                  </div>
+                </div>
+                <div class="card expense-type-card" data-value="utilities">
+                  <div class="card-body text-center">
+                    <i class="bi bi-lightbulb fs-3"></i>
+                    <p>Utilities</p>
+                  </div>
+                </div>
+                <div class="card expense-type-card" data-value="shopping">
+                  <div class="card-body text-center">
+                    <i class="bi bi-bag fs-3"></i>
+                    <p>Shopping</p>
+                  </div>
+                </div>
+                <div class="card expense-type-card" data-value="other">
+                  <div class="card-body text-center">
+                    <i class="bi bi-three-dots fs-3"></i>
+                    <p>Other</p>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" id="expenseType" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="saveExpense">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wishlist Modal -->
+    <div class="modal fade" id="wishlistModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add Wishlist Item</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Item Name</label>
+              <input type="text" class="form-control" id="wishlistName" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Price (Rp)</label>
+              <input type="number" class="form-control" id="wishlistPrice" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Thumbnail URL</label>
+              <input type="text" class="form-control" id="wishlistImage" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="saveWishlist">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal fade" id="historyModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Transaction History</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex justify-content-end mb-3">
+              <button class="btn btn-danger" id="clearHistory">
+                <i class="bi bi-trash"></i> Clear All Histories
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody id="historyTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Initialize data structures
+      let habits = JSON.parse(localStorage.getItem("habits")) || [];
+      let todos = JSON.parse(localStorage.getItem("todos")) || [];
+      let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+      let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+      let balance = parseFloat(localStorage.getItem("balance")) || 0;
+
+      // Chart instances
+      let charts = {
+        monthly: null,
+        income: null,
+      };
+
+      function clearCharts() {
+        Object.values(charts).forEach((chart) => {
+          if (chart instanceof Chart) {
+            chart.destroy();
+          }
+        });
+        charts = {
+          monthly: null,
+          income: null,
+        };
+      }
+
+      // Dashboard Charts
+      function updateDashboard() {
+        clearCharts(); // Clear all charts before rendering
+        renderMonthlyChart();
+        renderIncomeChart();
+        updateTransactionHistory();
+      }
+
+      function renderMonthlyChart() {
+        const canvas = document.getElementById("monthlyChart");
+        if (!canvas) return;
+
+        if (charts.monthly) {
+          charts.monthly.destroy();
+        }
+
+        const ctx = canvas.getContext("2d");
+        const today = new Date();
+        const labels = Array.from({ length: 30 }, (_, i) => {
+          const d = new Date(today);
+          d.setDate(d.getDate() - i);
+          return d.toLocaleDateString();
+        }).reverse();
+
+        const habitData = labels.map(() => 0);
+        const todoData = labels.map(() => 0);
+
+        habits.forEach((habit) => {
+          habit.progress.forEach((checked, index) => {
+            if (checked) habitData[index]++;
+          });
+        });
+
+        todos.forEach((todo) => {
+          todo.progress.forEach((checked, index) => {
+            if (checked) todoData[index]++;
+          });
+        });
+
+        const textColor = getComputedStyle(document.body)
+          .getPropertyValue("--text-color")
+          .trim();
+
+        charts.monthly = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Habits Completed",
+                data: habitData,
+                borderColor: "rgba(75, 192, 192, 1)",
+                tension: 0.1,
+                fill: false,
+              },
+              {
+                label: "Todos Completed",
+                data: todoData,
+                borderColor: "rgba(255, 99, 132, 1)",
+                tension: 0.1,
+                fill: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            scales: {
+              x: {
+                ticks: {
+                  color: textColor,
+                },
+              },
+              y: {
+                ticks: {
+                  color: textColor,
+                },
+                beginAtZero: true,
+              },
+            },
+            plugins: {
+              legend: {
+                labels: {
+                  color: textColor,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function renderIncomeChart() {
+        const canvas = document.getElementById("incomeChart");
+        if (!canvas) return;
+
+        if (charts.income) {
+          charts.income.destroy();
+        }
+
+        const ctx = canvas.getContext("2d");
+        const monthlyData = {};
+
+        transactions.forEach((transaction) => {
+          const date = new Date(transaction.date);
+          const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
+
+          if (!monthlyData[monthYear]) {
+            monthlyData[monthYear] = {
+              income: 0,
+              expense: 0,
+            };
+          }
+
+          if (transaction.type === "income") {
+            monthlyData[monthYear].income += transaction.amount;
+          } else {
+            monthlyData[monthYear].expense += transaction.amount;
+          }
+        });
+
+        const labels = Object.keys(monthlyData);
+        const incomeData = labels.map((month) => monthlyData[month].income);
+        const expenseData = labels.map((month) => monthlyData[month].expense);
+
+        const textColor = getComputedStyle(document.body)
+          .getPropertyValue("--text-color")
+          .trim();
+
+        charts.income = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Income",
+                data: incomeData,
+                backgroundColor: "rgba(75, 192, 192, 0.5)",
+                borderColor: "rgba(75, 192, 192, 1)",
+                borderWidth: 1,
+              },
+              {
+                label: "Expenses",
+                data: expenseData,
+                backgroundColor: "rgba(255, 99, 132, 0.5)",
+                borderColor: "rgba(255, 99, 132, 1)",
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            scales: {
+              x: {
+                ticks: {
+                  color: textColor,
+                },
+              },
+              y: {
+                ticks: {
+                  color: textColor,
+                },
+                beginAtZero: true,
+              },
+            },
+            plugins: {
+              legend: {
+                labels: {
+                  color: textColor,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function updateDashboardTransactions() {
+        const tbody = document.getElementById("dashboardHistoryTableBody");
+
+        // Sort transactions by most recent
+        const sortedTransactions = transactions
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .slice(0, 5); // Limit to the 5 most recent transactions
+
+        // Populate the table
+        tbody.innerHTML = sortedTransactions
+          .map(
+            (transaction) => `
+        <tr>
+          <td>${new Date(transaction.date).toLocaleDateString()}</td>
+          <td>${
+            transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)
+          }</td>
+          <td>${formatCurrency(transaction.amount)}</td>
+          <td>${transaction.description}</td>
+        </tr>
+      `
+          )
+          .join("");
+      }
+
+      // Utility functions
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+        }).format(amount);
+      }
+
+      function updateBalance() {
+        localStorage.setItem("balance", balance.toString());
+      }
+
+      // Habits Management
+      function createHabitForm() {
+        const form = document.createElement("div");
+        form.className = "habit-form mb-3";
+        form.innerHTML = `
+  <div class="mb-2">
+      <input type="text" class="form-control habit-name" placeholder="Habit Name" required>
+  </div>
+  <div class="mb-2">
+      <textarea class="form-control habit-description" placeholder="Description" required></textarea>
+  </div>
+  <div class="row">
+      <div class="col">
+          <input type="time" class="form-control habit-start" required>
+      </div>
+      <div class="col">
+          <input type="time" class="form-control habit-end" required>
+      </div>
+  </div>
+`;
+        return form;
+      }
+
+      document.getElementById("addHabitForm").addEventListener("click", () => {
+        const container = document.getElementById("habitForms");
+        container.appendChild(createHabitForm());
+      });
+
+      document.getElementById("saveHabits").addEventListener("click", () => {
+        const forms = document.querySelectorAll(".habit-form");
+
+        if (isEditing && editingHabitId !== null) {
+          // Update existing habit
+          const form = forms[0]; // Only one form should exist in edit mode
+          const habit = habits.find((h) => h.id == editingHabitId);
+
+          habit.name = form.querySelector(".habit-name").value;
+          habit.description = form.querySelector(".habit-description").value;
+          habit.timeStart = form.querySelector(".habit-start").value;
+          habit.timeEnd = form.querySelector(".habit-end").value;
+
+          isEditing = false;
+          editingHabitId = null; // Reset edit mode
+        } else {
+          // Add new habits
+          forms.forEach((form) => {
+            const habit = {
+              id: Date.now() + Math.random(),
+              name: form.querySelector(".habit-name").value,
+              description: form.querySelector(".habit-description").value,
+              timeStart: form.querySelector(".habit-start").value,
+              timeEnd: form.querySelector(".habit-end").value,
+              progress: Array(30).fill(false),
+              createdAt: new Date().toISOString(),
+            };
+            habits.push(habit);
+          });
+        }
+
+        localStorage.setItem("habits", JSON.stringify(habits));
+        renderHabits();
+        bootstrap.Modal.getInstance(
+          document.getElementById("habitModal")
+        ).hide();
+        document.getElementById("habitForms").innerHTML = "";
+      });
+
+      function renderHabits() {
+        const container = document.getElementById("habitsContainer");
+        container.innerHTML = habits
+          .map((habit) => {
+            const completed = habit.progress.filter(Boolean).length;
+            const progress = (completed / 30) * 100;
+            return `
+      <div class="habit-card" data-id="${habit.id}">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="mb-0">${habit.name}</h5>
+              <div>
+                  <button class="btn btn-sm btn-primary edit-habit" data-id="${
+                    habit.id
+                  }">
+                      <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger delete-habit" data-id="${
+                    habit.id
+                  }">
+                      <i class="bi bi-trash"></i>
+                  </button>
+              </div>
+          </div>
+          <p class="descript-text">${habit.description}</p>
+          <p>Time: ${habit.timeStart} - ${habit.timeEnd}</p>
+          <div class="progress mb-3">
+              <div class="progress-bar" role="progressbar" style="width: ${progress}%">
+                  ${progress.toFixed(1)}%
+              </div>
+          </div>
+          <div class="checkbox-container">
+              ${habit.progress
+                .map(
+                  (checked, index) => `
+                  <div class="day-checkbox ${checked ? "checked" : ""}" 
+                       data-day="${index}" 
+                       onclick="toggleHabitDay('${habit.id}', ${index})">
+                      ${index + 1}
+                  </div>
+              `
+                )
+                .join("")}
+          </div>
+      </div>
+  `;
+          })
+          .join("");
+      }
+
+      function toggleHabitDay(habitId, day) {
+        const habit = habits.find((h) => h.id == habitId);
+        if (habit) {
+          habit.progress[day] = !habit.progress[day];
+          localStorage.setItem("habits", JSON.stringify(habits));
+          renderHabits();
+          updateDashboard();
+        }
+      }
+
+      // Todo List Management
+      function createTodoForm() {
+        const form = document.createElement("div");
+        form.className = "todo-form mb-3";
+        form.innerHTML = `
+  <div class="mb-2">
+      <input type="text" class="form-control todo-name" placeholder="Todo Name" required>
+  </div>
+  <div class="mb-2">
+      <input type="text" class="form-control todo-goal" placeholder="Goal" required>
+  </div>
+  <div class="mb-2">
+      <input type="number" class="form-control todo-days" placeholder="Number of days" required min="1" max="30">
+  </div>
+`;
+        return form;
+      }
+
+      document.getElementById("addTodoForm").addEventListener("click", () => {
+        const container = document.getElementById("todoForms");
+        container.appendChild(createTodoForm());
+      });
+
+      document.getElementById("saveTodos").addEventListener("click", () => {
+        const forms = document.querySelectorAll(".todo-form");
+        forms.forEach((form) => {
+          const days = parseInt(form.querySelector(".todo-days").value);
+          const todo = {
+            id: Date.now() + Math.random(),
+            name: form.querySelector(".todo-name").value,
+            goal: form.querySelector(".todo-goal").value,
+            days: days,
+            progress: Array(days).fill(false),
+            createdAt: new Date().toISOString(),
+          };
+          todos.push(todo);
+        });
+        localStorage.setItem("todos", JSON.stringify(todos));
+        renderTodos();
+        bootstrap.Modal.getInstance(
+          document.getElementById("todoModal")
+        ).hide();
+        document.getElementById("todoForms").innerHTML = "";
+      });
+
+      function renderTodos() {
+        const container = document.getElementById("todosContainer");
+        container.innerHTML = todos
+          .map((todo) => {
+            const completed = todo.progress.filter(Boolean).length;
+            const progress = (completed / todo.days) * 100;
+            return `
+      <div class="todo-card" data-id="${todo.id}">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="mb-0">${todo.name}</h5>
+              <div>
+                  <button class="btn btn-sm btn-primary edit-todo" data-id="${
+                    todo.id
+                  }">
+                      <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger delete-todo" data-id="${
+                    todo.id
+                  }">
+                      <i class="bi bi-trash"></i>
+                  </button>
+              </div>
+          </div>
+          <p class="descript-text">Goal: ${todo.goal}</p>
+          <div class="progress mb-3">
+              <div class="progress-bar" role="progressbar" style="width: ${progress}%">
+                  ${progress.toFixed(1)}%
+              </div>
+          </div>
+          <div class="checkbox-container">
+              ${todo.progress
+                .map(
+                  (checked, index) => `
+                  <div class="day-checkbox ${checked ? "checked" : ""}" 
+                       data-day="${index}" 
+                       onclick="toggleTodoDay('${todo.id}', ${index})">
+                      ${index + 1}
+                  </div>
+              `
+                )
+                .join("")}
+          </div>
+      </div>
+  `;
+          })
+          .join("");
+      }
+
+      function toggleTodoDay(todoId, day) {
+        const todo = todos.find((t) => t.id == todoId);
+        if (todo) {
+          todo.progress[day] = !todo.progress[day];
+          localStorage.setItem("todos", JSON.stringify(todos));
+          renderTodos();
+          updateDashboard();
+        }
+      }
+
+      // Income & Expense Management
+      document.getElementById("saveIncome").addEventListener("click", () => {
+        const amount = parseFloat(
+          document.getElementById("incomeAmount").value
+        );
+        if (amount > 0) {
+          const transaction = {
+            type: "income",
+            amount: amount,
+            date: new Date().toISOString(),
+            description: "Income",
+          };
+          transactions.push(transaction);
+          balance += amount;
+          localStorage.setItem("transactions", JSON.stringify(transactions));
+          animateNumber(document.getElementById("totalBalance"), balance);
+
+          updateDashboard();
+          bootstrap.Modal.getInstance(
+            document.getElementById("incomeModal")
+          ).hide();
+          document.getElementById("incomeAmount").value = "";
+        }
+      });
+
+      document.getElementById("saveExpense").addEventListener("click", () => {
+        const amount = parseFloat(
+          document.getElementById("expenseAmount").value
+        );
+        const reason = document.getElementById("expenseReason").value;
+        const type = document.getElementById("expenseType").value;
+        if (amount > 0 && reason) {
+          const transaction = {
+            type: "expense",
+            amount: amount,
+            date: new Date().toISOString(),
+            description: reason,
+            category: type,
+          };
+          transactions.push(transaction);
+          balance -= amount;
+          localStorage.setItem("transactions", JSON.stringify(transactions));
+          animateNumber(document.getElementById("totalBalance"), balance);
+
+          updateDashboard();
+          bootstrap.Modal.getInstance(
+            document.getElementById("expenseModal")
+          ).hide();
+          document.getElementById("expenseAmount").value = "";
+          document.getElementById("expenseReason").value = "";
+        }
+      });
+
+      // Wishlist Management
+      document.getElementById("saveWishlist").addEventListener("click", () => {
+        const name = document.getElementById("wishlistName").value;
+        const price = parseFloat(
+          document.getElementById("wishlistPrice").value
+        );
+        const image = document.getElementById("wishlistImage").value;
+        if (name && price > 0) {
+          const item = {
+            id: Date.now(),
+            name: name,
+            price: price,
+            image: image || "https://via.placeholder.com/150",
+          };
+          wishlist.push(item);
+          localStorage.setItem("wishlist", JSON.stringify(wishlist));
+          renderWishlist();
+          bootstrap.Modal.getInstance(
+            document.getElementById("wishlistModal")
+          ).hide();
+          document.getElementById("wishlistName").value = "";
+          document.getElementById("wishlistPrice").value = "";
+          document.getElementById("wishlistImage").value = "";
+        }
+      });
+
+      function renderWishlist() {
+        const container = document.getElementById("wishlistContainer");
+        container.innerHTML = wishlist
+          .map(
+            (item) => `
+  <div class="card wishlist-card">
+      <img src="${item.image}" class="card-img-top wishlist-image" alt="${
+              item.name
+            }">
+      <div class="card-body">
+          <h5 class="card-title">${item.name}</h5>
+          <p class="card-text">${formatCurrency(item.price)}</p>
+          <button class="btn btn-sm btn-success ${
+            balance >= item.price ? "" : "disabled"
+          }"
+                  onclick="buyWishlistItem(${item.id})">
+              Buy
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deleteWishlistItem(${
+            item.id
+          })">
+              Delete
+          </button>
+      </div>
+  </div>
+`
+          )
+          .join("");
+      }
+
+      // Clear History functionality
+      document
+        .getElementById("clearHistory")
+        .addEventListener("click", function () {
+          if (
+            confirm(
+              "Are you sure you want to clear all transaction history? This cannot be undone."
+            )
+          ) {
+            transactions = [];
+            localStorage.setItem("transactions", JSON.stringify(transactions));
+            updateDashboard();
+            alert("Transaction history has been cleared.");
+          }
+        });
+
+      let isEditing = false;
+      let editingHabitId = null;
+
+      // Edit Habit functionality
+      function editHabit(id) {
+        const habit = habits.find((h) => h.id == id);
+        if (!habit) return;
+
+        isEditing = true; // Set mode to editing
+        editingHabitId = id; // Store the ID of the habit being edited
+
+        const modal = new bootstrap.Modal(
+          document.getElementById("habitModal")
+        );
+        const formsContainer = document.getElementById("habitForms");
+        formsContainer.innerHTML = ""; // Clear existing forms
+
+        const form = createHabitForm();
+        form.querySelector(".habit-name").value = habit.name;
+        form.querySelector(".habit-description").value = habit.description;
+        form.querySelector(".habit-start").value = habit.timeStart;
+        form.querySelector(".habit-end").value = habit.timeEnd;
+        formsContainer.appendChild(form);
+
+        modal.show();
+      }
+
+      // Edit Todo functionality
+      function editTodo(id) {
+        const todo = todos.find((t) => t.id == id);
+        if (!todo) return;
+
+        const modal = new bootstrap.Modal(document.getElementById("todoModal"));
+        const formsContainer = document.getElementById("todoForms");
+        formsContainer.innerHTML = ""; // Clear existing forms
+
+        const form = createTodoForm();
+        form.querySelector(".todo-name").value = todo.name;
+        form.querySelector(".todo-goal").value = todo.goal;
+        form.querySelector(".todo-days").value = todo.days;
+        formsContainer.appendChild(form);
+
+        // Change save button functionality for edit mode
+        const saveButton = document.getElementById("saveTodos");
+        const originalClickHandler = saveButton.onclick;
+
+        saveButton.onclick = () => {
+          todo.name = form.querySelector(".todo-name").value;
+          todo.goal = form.querySelector(".todo-goal").value;
+          const newDays = parseInt(form.querySelector(".todo-days").value);
+
+          // Adjust progress array if days changed
+          if (newDays !== todo.days) {
+            if (newDays > todo.days) {
+              todo.progress = [
+                ...todo.progress,
+                ...Array(newDays - todo.days).fill(false),
+              ];
+            } else {
+              todo.progress = todo.progress.slice(0, newDays);
+            }
+            todo.days = newDays;
+          }
+
+          localStorage.setItem("todos", JSON.stringify(todos));
+          renderTodos();
+          modal.hide();
+
+          // Restore original click handler
+          saveButton.onclick = originalClickHandler;
+        };
+
+        modal.show();
+      }
+
+      function buyWishlistItem(id) {
+        const item = wishlist.find((i) => i.id === id);
+        if (item && balance >= item.price) {
+          const confirmed = confirm(
+            `Are you sure you want to buy ${item.name}?`
+          );
+          if (confirmed) {
+            balance -= item.price;
+            transactions.push({
+              type: "expense",
+              amount: item.price,
+              date: new Date().toISOString(),
+              description: `Bought wishlist item: ${item.name}`,
+            });
+            wishlist = wishlist.filter((i) => i.id !== id);
+            localStorage.setItem("wishlist", JSON.stringify(wishlist));
+            localStorage.setItem("transactions", JSON.stringify(transactions));
+            animateNumber(document.getElementById("totalBalance"), balance);
+
+            renderWishlist();
+            updateDashboard();
+          }
+        } else if (balance < item.price) {
+          alert("uang lu belum cukup, bro!");
+        }
+      }
+
+      function deleteWishlistItem(id) {
+        const confirmed = confirm("Are you sure you want to delete this item?");
+        if (confirmed) {
+          wishlist = wishlist.filter((i) => i.id !== id);
+          localStorage.setItem("wishlist", JSON.stringify(wishlist));
+          renderWishlist();
+        }
+      }
+
+      function updateTransactionHistory() {
+        const tbody = document.getElementById("historyTableBody");
+        tbody.innerHTML = transactions
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .map(
+            (transaction) => `
+                    <tr>
+                        <td>${new Date(
+                          transaction.date
+                        ).toLocaleDateString()}</td>
+                        <td>${transaction.type}</td>
+                        <td>${formatCurrency(transaction.amount)}</td>
+                        <td>${transaction.description}</td>
+                    </tr>
+                `
+          )
+          .join("");
+      }
+
+      function animateNumber(targetElement, finalValue, duration = 1500) {
+        const startValue =
+          parseFloat(targetElement.textContent.replace(/[^0-9.-]/g, "")) || 0;
+        const stepTime = 50; // Time for each step in ms
+        const steps = Math.ceil(duration / stepTime);
+        let currentStep = 0;
+
+        // Add animated class
+        targetElement.classList.add("animated");
+
+        const randomize = () => {
+          const randomValue = Math.random() * (finalValue * 2);
+          targetElement.textContent = formatCurrency(randomValue.toFixed(2));
+        };
+
+        const interval = setInterval(() => {
+          if (currentStep < steps) {
+            randomize();
+            currentStep++;
+          } else {
+            clearInterval(interval);
+            targetElement.textContent = formatCurrency(finalValue); // Set final value
+            targetElement.classList.remove("animated"); // Remove animation class
+            // Ensure balance is saved after animation
+            localStorage.setItem("balance", finalValue.toString());
+          }
+        }, stepTime);
+      }
+
+      // Initial setup
+      document.addEventListener("DOMContentLoaded", () => {
+        // Add initial habit form
+        document.getElementById("habitForms").appendChild(createHabitForm());
+
+        // Add initial todo form
+        document.getElementById("todoForms").appendChild(createTodoForm());
+
+        // Render all components
+        renderHabits();
+        renderTodos();
+        renderWishlist();
+        animateNumber(document.getElementById("totalBalance"), balance);
+        updateDashboard();
+        updateDashboardTransactions();
+
+        const dashboardTab = document.getElementById("dashboard-tab");
+        dashboardTab.addEventListener("shown.bs.tab", () => {
+          clearCharts();
+          renderMonthlyChart();
+          renderIncomeChart();
+        });
+
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById("darkModeToggle");
+
+        // Check localStorage for dark mode preference
+        if (localStorage.getItem("darkMode") === "true") {
+          document.body.classList.add("dark-mode");
+          darkModeToggle.checked = true;
+        }
+
+        // Toggle dark mode on switch change
+        darkModeToggle.addEventListener("change", () => {
+          if (darkModeToggle.checked) {
+            document.body.classList.add("dark-mode");
+            localStorage.setItem("darkMode", "true");
+          } else {
+            document.body.classList.remove("dark-mode");
+            localStorage.setItem("darkMode", "false");
+          }
+          renderMonthlyChart(); // Re-render charts
+          renderIncomeChart();
+        });
+      });
+
+      // Event delegation for edit and delete buttons
+      document
+        .getElementById("habitsContainer")
+        .addEventListener("click", (e) => {
+          if (
+            e.target.classList.contains("edit-habit") ||
+            e.target.parentElement.classList.contains("edit-habit")
+          ) {
+            const id = e.target.closest(".edit-habit").dataset.id;
+            editHabit(id);
+          }
+        });
+
+      document
+        .getElementById("todosContainer")
+        .addEventListener("click", (e) => {
+          if (
+            e.target.classList.contains("edit-todo") ||
+            e.target.parentElement.classList.contains("edit-todo")
+          ) {
+            const id = e.target.closest(".edit-todo").dataset.id;
+            editTodo(id);
+          }
+        });
+
+      document
+        .getElementById("habitsContainer")
+        .addEventListener("click", (e) => {
+          if (
+            e.target.classList.contains("delete-habit") ||
+            e.target.parentElement.classList.contains("delete-habit")
+          ) {
+            const id = e.target.closest(".delete-habit").dataset.id;
+            if (confirm("Are you sure you want to delete this habit?")) {
+              habits = habits.filter((h) => h.id != id);
+              localStorage.setItem("habits", JSON.stringify(habits));
+              renderHabits();
+              updateDashboard();
+            }
+          }
+        });
+
+      document
+        .getElementById("todosContainer")
+        .addEventListener("click", (e) => {
+          if (
+            e.target.classList.contains("delete-todo") ||
+            e.target.parentElement.classList.contains("delete-todo")
+          ) {
+            const id = e.target.closest(".delete-todo").dataset.id;
+            if (confirm("Are you sure you want to delete this todo?")) {
+              todos = todos.filter((t) => t.id != id);
+              localStorage.setItem("todos", JSON.stringify(todos));
+              renderTodos();
+              updateDashboard();
+            }
+          }
+        });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const expenseTypeCards =
+          document.querySelectorAll(".expense-type-card");
+        const expenseTypeInput = document.getElementById("expenseType");
+
+        expenseTypeCards.forEach((card) => {
+          card.addEventListener("click", () => {
+            // Remove "selected" class from all cards
+            expenseTypeCards.forEach((c) => c.classList.remove("selected"));
+
+            // Add "selected" class to the clicked card
+            card.classList.add("selected");
+
+            // Update the hidden input value
+            expenseTypeInput.value = card.dataset.value;
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
