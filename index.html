@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="/icons/192x192.png" />
 
     <!-- Add version to prevent caching -->
-    <meta name="version" content="2.0.0" />
+    <meta name="version" content="2.0.2" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Habit & Income Tracker</title>
@@ -105,9 +105,43 @@
         color: var(--text-color);
       }
 
+      .nav-tabs {
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .nav-tabs .nav-link {
+        color: var(--text-color);
+        background: transparent;
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+      }
+
+      .nav-tabs .nav-link:hover {
+        border: none;
+        color: var(--primary-color);
+      }
+
       .nav-tabs .nav-link.active {
+        background: transparent;
+        border: none;
+        color: var(--primary-color);
+      }
+
+      .nav-tabs .nav-link::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
         background-color: var(--primary-color);
-        color: white;
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+      }
+
+      .nav-tabs .nav-link.active::after {
+        transform: scaleX(1);
       }
 
       .btn-primary {
@@ -167,6 +201,15 @@
 
       .move-up {
         animation: slideUp 0.5s ease forwards;
+      }
+
+      .reset-button {
+        padding: 8px 16px;
+        font-weight: 500;
+      }
+
+      .reset-button i {
+        margin-right: 4px;
       }
 
       @keyframes slideUp {
@@ -258,6 +301,39 @@
         color: white;
       }
 
+      .table-borderless td {
+        padding: 0.5rem 1rem;
+        color: var(--text-color);
+      }
+
+      .table-borderless tr:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+
+      .modal-dialog-centered {
+        display: flex;
+        align-items: center;
+        min-height: calc(100% - 1rem);
+      }
+
+      #installModal .modal-body {
+        padding: 2rem;
+      }
+
+      #installModal img {
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      #installButton {
+        background-color: var(--btn-color);
+        border-color: var(--primary-color);
+      }
+
+      #installButton i {
+        margin-right: 0.5rem;
+      }
+
       #totalBalance {
         font-family: "Digital-7 Mono", monospace;
         font-size: 2rem;
@@ -280,9 +356,6 @@
       }
 
       @media (max-width: 768px) {
-        .container {
-          padding: 10px;
-        }
         #monthlyChart {
           max-height: 200px;
           width: 100%;
@@ -312,6 +385,20 @@
         .nav-tabs .nav-link i {
           font-size: 1.2rem;
           margin-bottom: 2px;
+        }
+
+        .reset-button {
+          width: 45px;
+          height: 45px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .reset-button i {
+          font-size: 1.5rem !important;
+          margin: 0;
         }
 
         .container {
@@ -538,7 +625,9 @@
         <div class="tab-pane fade" id="settings">
           <div class="card mb-3">
             <div class="card-body">
-              <h5 class="card-title">Appearance</h5>
+              <h5 class="card-title">
+                <i class="bi bi-toggles"></i> Appearance
+              </h5>
               <div class="form-check form-switch">
                 <input
                   class="form-check-input"
@@ -554,13 +643,15 @@
 
           <div class="card mb-3">
             <div class="card-body">
-              <h5 class="card-title">Habits Management</h5>
+              <h5 class="card-title">
+                <i class="bi bi-calendar-check-fill"></i> Habits Management
+              </h5>
               <div class="d-grid gap-2">
                 <button class="btn btn-warning" onclick="resetAllHabits()">
-                  Reset All Habits Progress
+                  <i class="bi bi-arrow-repeat"></i> Reset All Habits Progress
                 </button>
                 <button class="btn btn-danger" onclick="deleteAllHabits()">
-                  Delete All Habits
+                  <i class="bi bi-trash-fill"></i> Delete All Habits
                 </button>
               </div>
             </div>
@@ -568,14 +659,46 @@
 
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Todos Management</h5>
+              <h5 class="card-title">
+                <i class="bi bi-ui-checks"></i> Todos Management
+              </h5>
               <div class="d-grid gap-2">
                 <button class="btn btn-warning" onclick="resetAllTodos()">
-                  Reset All Todos Progress
+                  <i class="bi bi-arrow-repeat"></i> Reset All Todos Progress
                 </button>
                 <button class="btn btn-danger" onclick="deleteAllTodos()">
-                  Delete All Todos
+                  <i class="bi bi-trash-fill"></i> Delete All Todos
                 </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">
+                <i class="bi bi-info-circle"></i> App Information
+              </h5>
+              <div class="table-responsive">
+                <table class="table table-borderless">
+                  <tbody>
+                    <tr>
+                      <td><strong>Version</strong></td>
+                      <td>2.0.2</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Last Update</strong></td>
+                      <td>March 27, 2024</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Initial Release</strong></td>
+                      <td>March 20, 2024</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Developer</strong></td>
+                      <td>V'CTOR COMPANY</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -901,6 +1024,52 @@
       </div>
     </div>
 
+    <div class="modal fade" id="installModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Ingin tracking habits lebih mudah?</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body text-center">
+            <p class="mb-4">Install di layar beranda kamu</p>
+            <img
+              src="/trackers/icons/128x128.ico"
+              alt="App Icon"
+              class="mb-3"
+              style="width: 64px; height: 64px"
+            />
+            <div class="form-check mb-3">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="dontAskAgain"
+              />
+              <label class="form-check-label" for="dontAskAgain">
+                Jangan tanyakan lagi
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="installButton">
+              <i class="bi bi-download"></i> Install
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       // Initialize data structures
@@ -909,6 +1078,74 @@
       let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
       let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
       let balance = parseFloat(localStorage.getItem("balance")) || 0;
+
+      let deferredPrompt;
+      const installModal = new bootstrap.Modal(
+        document.getElementById("installModal")
+      );
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        // Prevent Chrome 67 and earlier from automatically showing the prompt
+        e.preventDefault();
+        // Stash the event so it can be triggered later.
+        deferredPrompt = e;
+
+        // Check if we should show the install prompt
+        checkInstallPrompt();
+      });
+
+      function checkInstallPrompt() {
+        // Check if user has chosen to not see the prompt
+        const dontAskUntil = localStorage.getItem("dontAskUntil");
+        const now = new Date().getTime();
+
+        if (!dontAskUntil || now > parseInt(dontAskUntil)) {
+          installModal.show();
+        }
+      }
+
+      // Handle the install button click
+      document
+        .getElementById("installButton")
+        .addEventListener("click", async () => {
+          if (deferredPrompt) {
+            // Show the install prompt
+            deferredPrompt.prompt();
+
+            // Wait for the user to respond to the prompt
+            const { outcome } = await deferredPrompt.userChoice;
+
+            // We no longer need the prompt. Clear it up.
+            deferredPrompt = null;
+
+            if (outcome === "accepted") {
+              console.log("User accepted the install prompt");
+            }
+
+            installModal.hide();
+          }
+        });
+
+      // Handle the "don't ask again" checkbox
+      document
+        .getElementById("dontAskAgain")
+        .addEventListener("change", (e) => {
+          if (e.target.checked) {
+            // Set expiry to 3 days from now
+            const threeDaysFromNow =
+              new Date().getTime() + 3 * 24 * 60 * 60 * 1000;
+            localStorage.setItem("dontAskUntil", threeDaysFromNow.toString());
+          } else {
+            localStorage.removeItem("dontAskUntil");
+          }
+        });
+
+      // Check if app is installed
+      window.addEventListener("appinstalled", () => {
+        // Clear any install prompts
+        deferredPrompt = null;
+        installModal.hide();
+      });
 
       function checkForUpdates() {
         if ("serviceWorker" in navigator) {
@@ -1440,7 +1677,9 @@
 
       // Helper function to check if all checkboxes are completed
       function isFullyCompleted(progressArray) {
-        return progressArray.every((progress) => progress === true);
+        return progressArray.every(
+          (progress) => progress === true || progress === "failed"
+        );
       }
 
       function toggleTodoDay(todoId, day) {
@@ -1579,28 +1818,33 @@
           `[data-bs-target="#${itemType}Modal"]`
         );
 
-        // Remove existing button container if exists
         if (existingButtonContainer) {
           existingButtonContainer.remove();
         }
 
-        // Create container for buttons
         const buttonContainer = document.createElement("div");
         buttonContainer.className =
           "d-flex justify-content-between mb-3 button-container";
 
-        // Always add the "Add New" button
         buttonContainer.appendChild(addNewButton);
 
-        // Check if all items are completed
-        const allCompleted =
+        // Check if all items have all checkboxes either completed or failed
+        const allFilled =
           itemsArray.length > 0 &&
-          itemsArray.every((item) => isFullyCompleted(item.progress));
+          itemsArray.every((item) =>
+            item.progress.every(
+              (status) => status === true || status === "failed"
+            )
+          );
 
-        if (allCompleted) {
+        if (allFilled) {
           const resetButton = document.createElement("button");
-          resetButton.className = "btn btn-warning reset-button";
-          resetButton.innerHTML = `Reset ${itemType}s`;
+          resetButton.className = "btn btn-warning reset-button fs-5"; // Add fs-5 for bigger font
+          resetButton.innerHTML = `
+  <i class="bi bi-arrow-repeat fs-4"></i> 
+  <span class="d-none d-md-inline ms-2">Reset ${itemType}s</span>
+`;
+          resetButton.title = `Reset ${itemType}s`;
           resetButton.onclick = () => {
             showValidationModal(
               `Are you sure you want to reset all ${itemType}s?`,
@@ -1622,11 +1866,9 @@
             );
           };
 
-          // Add the reset button to the container
           buttonContainer.appendChild(resetButton);
         }
 
-        // Insert the button container before the first element in the container
         container.insertBefore(buttonContainer, container.firstChild);
       }
 
