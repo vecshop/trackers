@@ -5,14 +5,14 @@
   "description": "A web app to track habits and income.",
   "icons": [
     {
-      "src": "/icons/128x128.png",
+      "src": "trackers/icons/128x128.ico",
       "sizes": "128x128",
-      "type": "image/png"
+      "type": "image/x-icon"
     },
     {
-      "src": "/icons/512x512.png",
+      "src": "trackers/icons/512x512.ico",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/x-icon"
     }
   ],
   "start_url": "index.html",
@@ -22,12 +22,12 @@
   "shortcuts": [
     {
       "name": "Add Habit",
-      "url": "/index.html#habits",
+      "url": "/trackers/index.html#habits",
       "description": "Add a new habit"
     },
     {
       "name": "Add Todo",
-      "url": "/index.html#todos",
+      "url": "/trackers/index.html#todos",
       "description": "Add a new todo"
     }
   ]
