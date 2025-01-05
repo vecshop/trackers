@@ -1,7 +1,7 @@
 {
   "name": "MY PRODUCTIVITY TRACKERS",
   "short_name": "TRACKERS",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "A web app to track habits and income.",
   "icons": [
     {
