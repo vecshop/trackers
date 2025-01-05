@@ -909,7 +909,7 @@
 
       function checkForUpdates() {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js').then(registration => {
+      navigator.serviceWorker.register('/trackers/service-worker.js').then(registration => {
         setInterval(() => {
           registration.update();
         }, 60 * 1000);
