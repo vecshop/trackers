@@ -2,14 +2,17 @@
 <html lang="en">
   <head>
     <!-- Add meta tags for SEO and mobile -->
-  <meta name="description" content="Track your habits, todos and income with this productivity app">
-  <meta name="theme-color" content="#533483">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <link rel="apple-touch-icon" href="/icons/192x192.png">
-  
-  <!-- Add version to prevent caching -->
-  <meta name="version" content="2.0.0">
+    <meta
+      name="description"
+      content="Track your habits, todos and income with this productivity app"
+    />
+    <meta name="theme-color" content="#533483" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="apple-touch-icon" href="/icons/192x192.png" />
+
+    <!-- Add version to prevent caching -->
+    <meta name="version" content="2.0.0" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Habit & Income Tracker</title>
@@ -27,7 +30,7 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
       rel="stylesheet"
     />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="/trackers/manifest.json" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       :root {
@@ -908,34 +911,36 @@
       let balance = parseFloat(localStorage.getItem("balance")) || 0;
 
       function checkForUpdates() {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/trackers/service-worker.js').then(registration => {
-        setInterval(() => {
-          registration.update();
-        }, 60 * 1000);
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker
+            .register("/trackers/service-worker.js")
+            .then((registration) => {
+              setInterval(() => {
+                registration.update();
+              }, 60 * 1000);
 
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'activated') {
+              registration.addEventListener("updatefound", () => {
+                const newWorker = registration.installing;
+
+                newWorker.addEventListener("statechange", () => {
+                  if (newWorker.state === "activated") {
+                    window.location.reload();
+                  }
+                });
+              });
+            });
+
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener("controllerchange", () => {
+            if (!refreshing) {
+              refreshing = true;
               window.location.reload();
             }
           });
-        });
-      });
-
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
         }
-      });
-    }
-  }
+      }
 
-  window.addEventListener('load', checkForUpdates);
+      window.addEventListener("load", checkForUpdates);
 
       // Chart instances
       let charts = {
