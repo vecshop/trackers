@@ -1,21 +1,34 @@
 {
   "name": "MY PRODUCTIVITY TRACKERS",
   "short_name": "TRACKERS",
+  "version": "2.0.0",
   "description": "A web app to track habits and income.",
   "icons": [
     {
-      "src": "/trackers/icons/128x128.ico",
+      "src": "/icons/128x128.png",
       "sizes": "128x128",
-      "type": "image/x-icon"
+      "type": "image/png"
     },
     {
-      "src": "/trackers/icons/512x512.ico",
+      "src": "/icons/512x512.png",
       "sizes": "512x512",
-      "type": "image/x-icon"
+      "type": "image/png"
     }
   ],
-  "start_url": "/trackers/index.html",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#533483"
+  "start_url": "index.html",
+  "scope": "/",
+  "orientation": "portrait",
+  "categories": ["productivity", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Add Habit",
+      "url": "/index.html#habits",
+      "description": "Add a new habit"
+    },
+    {
+      "name": "Add Todo",
+      "url": "/index.html#todos",
+      "description": "Add a new todo"
+    }
+  ]
 }
