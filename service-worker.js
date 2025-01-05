@@ -1,11 +1,11 @@
 const CACHE_NAME = "habit-tracker-cache-v2";
 const APP_VERSION = "2.0.0"; // Match with manifest version
 const urlsToCache = [
-  "/",
-  "/index.html",
-  "/manifest.json",
-  "/icons/128x128.png",
-  "/icons/512x512.png",
+  "/trackers/",
+  "/trackers/index.html",
+  "/trackers/manifest.json",
+  "/trackers/icons/128x128.ico",
+  "/trackers/icons/512x512.ico",
   // Add all external resources
   "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css",
   "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css",
