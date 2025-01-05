@@ -1,5 +1,5 @@
 const CACHE_NAME = "habit-tracker-cache-v2";
-const APP_VERSION = "2.0.0"; // Match with manifest version
+const APP_VERSION = "2.0.2"; // Match with manifest version
 const urlsToCache = [
   "/trackers/",
   "/trackers/index.html",
@@ -11,10 +11,10 @@ const urlsToCache = [
   "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css",
   "https://cdn.jsdelivr.net/npm/chart.js",
   "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js",
-  "https://cdn-icons-png.flaticon.com/512/1047/1047711.png"
+  "https://cdn-icons-png.flaticon.com/512/1047/1047711.png",
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(urlsToCache);
@@ -23,7 +23,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting(); // Immediately activate new service worker
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     Promise.all([
       // Clear old caches
@@ -37,12 +37,12 @@ self.addEventListener('activate', (event) => {
         );
       }),
       // Take control of all clients
-      clients.claim()
+      clients.claim(),
     ])
   );
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       // Return cached response if found
