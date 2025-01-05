@@ -1,6 +1,6 @@
 {
   "name": "html-css",
-  "version": "1.0.0",
+  "version": "2.0.2",
   "description": "A template for HTML and CSS",
   "main": "index.html",
   "scripts": {
