@@ -18,7 +18,7 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
       rel="stylesheet"
     />
-    <link rel="manifest" href="/trackers/manifest.json" />
+    <link rel="manifest" href="/manifest.json" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       :root {
@@ -62,6 +62,7 @@
         box-shadow: 0 4px 6px var(--shadow-color);
         color: var(--text-color);
         border-radius: 10px;
+        margin-bottom: 5px;
       }
 
       .modal-content {
@@ -119,6 +120,64 @@
         border-radius: 10px;
         color: var(--text-color);
         box-shadow: 0 4px 6px var(--shadow-color);
+        transition: all 0.5s ease;
+        position: relative;
+      }
+
+      .completed-card {
+        background: rgba(52, 255, 130, 0.329);
+      }
+      .failed-card {
+        background: rgba(255, 82, 52, 0.329);
+      }
+
+      .completed-title,
+      .failed-title {
+        text-decoration: line-through;
+        transition: text-decoration 0.3s ease;
+        animation: bigging 0.5s ease;
+      }
+
+      .fully-completed-card {
+        background: rgba(
+          40,
+          167,
+          69,
+          0.2
+        ) !important; /* Using Bootstrap's success green with opacity */
+        border: 1px solid rgba(40, 167, 69, 0.5);
+      }
+
+      .move-down {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+
+      .move-up {
+        animation: slideUp 0.5s ease forwards;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes bigging {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
       }
 
       .checkbox-container {
@@ -141,6 +200,22 @@
       .day-checkbox.checked {
         background-color: var(--accent-color);
         color: white;
+      }
+
+      .day-checkbox.failed {
+        background-color: #808080; /* Gray color */
+        color: white;
+        opacity: 0.7;
+      }
+
+      .btn-fail {
+        background-color: #ff4d4d;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        margin-bottom: 10px;
       }
 
       .wishlist-card {
@@ -183,9 +258,53 @@
         color: var(--digital-color);
       }
 
+      #incomeChart {
+        max-height: 300px;
+      }
+
+      #monthlyChart {
+        max-height: 300px;
+        width: 100%;
+      }
+
       @media (max-width: 768px) {
         .container {
           padding: 10px;
+        }
+        #monthlyChart {
+          max-height: 200px;
+          width: 100%;
+        }
+        #incomeChart {
+          max-height: 200px;
+        }
+        .nav-tabs {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+        }
+
+        .nav-tabs .nav-item {
+          flex: 1;
+          text-align: center;
+        }
+
+        .nav-tabs .nav-link {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 8px 4px;
+          font-size: 0.6rem;
+        }
+
+        .nav-tabs .nav-link i {
+          font-size: 1.2rem;
+          margin-bottom: 2px;
+        }
+
+        .container {
+          padding: 10px;
+          padding-top: 10px !important;
         }
       }
     </style>
@@ -193,7 +312,7 @@
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
           navigator.serviceWorker
-            .register("/trackers/service-worker.js")
+            .register("/service-worker.js")
             .then((registration) => {
               console.log(
                 "Service Worker registered with scope:",
@@ -225,6 +344,7 @@
             data-bs-target="#dashboard"
             type="button"
           >
+            <i class="bi bi-bar-chart-fill"></i>
             Dashboard
           </button>
         </li>
@@ -236,18 +356,21 @@
             data-bs-target="#habits"
             type="button"
           >
+            <i class="bi bi-calendar-check-fill"></i>
             Habits
           </button>
         </li>
         <li class="nav-item" role="presentation">
           <button
+            translate="no"
             class="nav-link"
             id="todos-tab"
             data-bs-toggle="tab"
             data-bs-target="#todos"
             type="button"
           >
-            To-Do List
+            <i class="bi bi-ui-checks"></i>
+            To Do
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -258,6 +381,7 @@
             data-bs-target="#income"
             type="button"
           >
+            <i class="bi bi-cash-stack"></i>
             Income
           </button>
         </li>
@@ -269,6 +393,7 @@
             data-bs-target="#settings"
             type="button"
           >
+            <i class="bi bi-gear-fill"></i>
             Settings
           </button>
         </li>
@@ -399,7 +524,7 @@
         </div>
         <!-- Tab Settings -->
         <div class="tab-pane fade" id="settings">
-          <div class="card">
+          <div class="card mb-3">
             <div class="card-body">
               <h5 class="card-title">Appearance</h5>
               <div class="form-check form-switch">
@@ -408,9 +533,37 @@
                   type="checkbox"
                   id="darkModeToggle"
                 />
-                <label class="form-check-label" for="darkModeToggle">
-                  Dark Mode
-                </label>
+                <label class="form-check-label" for="darkModeToggle"
+                  >Dark Mode</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">Habits Management</h5>
+              <div class="d-grid gap-2">
+                <button class="btn btn-warning" onclick="resetAllHabits()">
+                  Reset All Habits Progress
+                </button>
+                <button class="btn btn-danger" onclick="deleteAllHabits()">
+                  Delete All Habits
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Todos Management</h5>
+              <div class="d-grid gap-2">
+                <button class="btn btn-warning" onclick="resetAllTodos()">
+                  Reset All Todos Progress
+                </button>
+                <button class="btn btn-danger" onclick="deleteAllTodos()">
+                  Delete All Todos
+                </button>
               </div>
             </div>
           </div>
@@ -701,6 +854,41 @@
       </div>
     </div>
 
+    <!-- validation modal -->
+    <div class="modal fade" id="validationModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirmation</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p id="validationMessage"></p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="validationConfirm"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       // Initialize data structures
@@ -756,14 +944,20 @@
         const todoData = labels.map(() => 0);
 
         habits.forEach((habit) => {
-          habit.progress.forEach((checked, index) => {
-            if (checked) habitData[index]++;
+          habit.progress.forEach((status, index) => {
+            if (status === true) {
+              // Only count true, not "failed"
+              habitData[index]++;
+            }
           });
         });
 
         todos.forEach((todo) => {
-          todo.progress.forEach((checked, index) => {
-            if (checked) todoData[index]++;
+          todo.progress.forEach((status, index) => {
+            if (status === true) {
+              // Only count true, not "failed"
+              todoData[index]++;
+            }
           });
         });
 
@@ -794,6 +988,8 @@
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false, // Allow custom height
+            aspectRatio: 2, // Width:Height ratio (2:1)
             scales: {
               x: {
                 ticks: {
@@ -856,41 +1052,27 @@
           .trim();
 
         charts.income = new Chart(ctx, {
-          type: "bar",
+          type: "doughnut",
           data: {
-            labels: labels,
+            labels: ["Income", "Expenses"], // Labels for the doughnut chart
             datasets: [
               {
-                label: "Income",
-                data: incomeData,
-                backgroundColor: "rgba(75, 192, 192, 0.5)",
-                borderColor: "rgba(75, 192, 192, 1)",
-                borderWidth: 1,
-              },
-              {
-                label: "Expenses",
-                data: expenseData,
-                backgroundColor: "rgba(255, 99, 132, 0.5)",
-                borderColor: "rgba(255, 99, 132, 1)",
+                label: "Income vs Expenses",
+                data: [
+                  incomeData.reduce((a, b) => a + b, 0), // Sum of all income
+                  expenseData.reduce((a, b) => a + b, 0), // Sum of all expenses
+                ],
+                backgroundColor: [
+                  "rgba(75, 192, 192, 0.5)",
+                  "rgba(255, 99, 132, 0.5)",
+                ],
+                borderColor: ["rgba(75, 192, 192, 1)", "rgba(255, 99, 132, 1)"],
                 borderWidth: 1,
               },
             ],
           },
           options: {
             responsive: true,
-            scales: {
-              x: {
-                ticks: {
-                  color: textColor,
-                },
-              },
-              y: {
-                ticks: {
-                  color: textColor,
-                },
-                beginAtZero: true,
-              },
-            },
             plugins: {
               legend: {
                 labels: {
@@ -1006,63 +1188,135 @@
         document.getElementById("habitForms").innerHTML = "";
       });
 
-      function renderHabits() {
-        const container = document.getElementById("habitsContainer");
-        container.innerHTML = habits
-          .map((habit) => {
-            const completed = habit.progress.filter(Boolean).length;
-            const progress = (completed / 30) * 100;
-            return `
-      <div class="habit-card" data-id="${habit.id}">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 class="mb-0">${habit.name}</h5>
-              <div>
-                  <button class="btn btn-sm btn-primary edit-habit" data-id="${
-                    habit.id
-                  }">
-                      <i class="bi bi-pencil"></i>
-                  </button>
-                  <button class="btn btn-sm btn-danger delete-habit" data-id="${
-                    habit.id
-                  }">
-                      <i class="bi bi-trash"></i>
-                  </button>
-              </div>
-          </div>
-          <p class="descript-text">${habit.description}</p>
-          <p>Time: ${habit.timeStart} - ${habit.timeEnd}</p>
-          <div class="progress mb-3">
-              <div class="progress-bar" role="progressbar" style="width: ${progress}%">
-                  ${progress.toFixed(1)}%
-              </div>
-          </div>
-          <div class="checkbox-container">
-              ${habit.progress
-                .map(
-                  (checked, index) => `
-                  <div class="day-checkbox ${checked ? "checked" : ""}" 
-                       data-day="${index}" 
-                       onclick="toggleHabitDay('${habit.id}', ${index})">
-                      ${index + 1}
-                  </div>
-              `
-                )
-                .join("")}
-          </div>
-      </div>
-  `;
-          })
-          .join("");
-      }
-
       function toggleHabitDay(habitId, day) {
         const habit = habits.find((h) => h.id == habitId);
         if (habit) {
           habit.progress[day] = !habit.progress[day];
-          localStorage.setItem("habits", JSON.stringify(habits));
-          renderHabits();
-          updateDashboard();
+
+          // Find the habit card
+          const habitCard = document.querySelector(
+            `.habit-card[data-id="${habitId}"]`
+          );
+          const habitTitle = habitCard.querySelector("h5");
+
+          // Check if all checkboxes are completed
+          const isCompleted = isFullyCompleted(habit.progress);
+
+          // Add completed styles
+          habitCard.classList.add("completed-card");
+          habitTitle.classList.add("completed-title");
+
+          // Trigger move down animation
+          setTimeout(() => {
+            habitCard.classList.add("move-down");
+
+            // Only reorder if not fully completed
+            if (!isFullyCompleted(habit.progress)) {
+              habits = habits.filter((h) => h.id != habitId);
+              // Insert before any fully completed habits
+              const completedIndex = habits.findIndex((h) =>
+                isFullyCompleted(h.progress)
+              );
+              if (completedIndex === -1) {
+                habits.push(habit);
+              } else {
+                habits.splice(completedIndex, 0, habit);
+              }
+            } else {
+              // If fully completed, move to end
+              habits = habits.filter((h) => h.id != habitId);
+              habits.push(habit);
+            }
+
+            // Re-render after animation
+            setTimeout(() => {
+              localStorage.setItem("habits", JSON.stringify(habits));
+              renderHabits();
+              updateDashboard();
+
+              // Add move up animation to other cards
+              document.querySelectorAll(".habit-card").forEach((card) => {
+                if (card.dataset.id !== habitId) {
+                  card.classList.add("move-up");
+                }
+              });
+            }, 500);
+          }, 300);
         }
+      }
+
+      // Updated renderHabits function
+      function renderHabits() {
+        const container = document.getElementById("habitsContainer");
+        container.innerHTML = habits
+          .map((habit, index) => {
+            const completed = habit.progress.filter(Boolean).length;
+            const progress = (completed / 30) * 100;
+            const isCompleted = isFullyCompleted(habit.progress);
+            const failButton =
+              index === 0
+                ? `
+                <button class="btn btn-secondary btn-fail" onclick="failHabit('${
+                  habit.id
+                }')">
+                    Fail in ${habit.progress.findIndex((day) => !day) + 1}
+                </button>`
+                : "";
+            return `
+        <div class="habit-card ${
+          isCompleted ? "fully-completed-card" : ""
+        }" data-id="${habit.id}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">${habit.name}</h5>
+                <div>
+                    <button class="btn btn-sm btn-primary edit-habit" data-id="${
+                      habit.id
+                    }">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-habit" data-id="${
+                      habit.id
+                    }">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <p class="descript-text">${habit.description}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <p>Time: ${habit.timeStart} - ${habit.timeEnd}</p>
+                ${failButton}
+            </div>
+            <div class="progress mb-3">
+                <div class="progress-bar ${
+                  isCompleted ? "bg-success" : ""
+                }" role="progressbar" style="width: ${progress}%">
+                    ${progress.toFixed(1)}%
+                </div>
+            </div>
+            <div class="checkbox-container">
+                ${habit.progress
+                  .map(
+                    (status, index) => `
+                     <div class="day-checkbox ${
+                       status === true
+                         ? "checked"
+                         : status === "failed"
+                         ? "failed"
+                         : ""
+                     }" 
+       data-day="${index}" 
+       onclick="toggleHabitDay('${habit.id}', ${index})">
+    ${index + 1}
+  </div>
+                `
+                  )
+                  .join("")}
+            </div>
+        </div>
+    `;
+          })
+          .join("");
+        addResetButton("habits", habits, "habit");
       }
 
       // Todo List Management
@@ -1088,20 +1342,50 @@
         container.appendChild(createTodoForm());
       });
 
+      // Update the saveTodos event listener
       document.getElementById("saveTodos").addEventListener("click", () => {
         const forms = document.querySelectorAll(".todo-form");
-        forms.forEach((form) => {
-          const days = parseInt(form.querySelector(".todo-days").value);
-          const todo = {
-            id: Date.now() + Math.random(),
-            name: form.querySelector(".todo-name").value,
-            goal: form.querySelector(".todo-goal").value,
-            days: days,
-            progress: Array(days).fill(false),
-            createdAt: new Date().toISOString(),
-          };
-          todos.push(todo);
-        });
+
+        if (isEditingTodo && editingTodoId !== null) {
+          // Update existing todo
+          const form = forms[0];
+          const todo = todos.find((t) => t.id == editingTodoId);
+
+          todo.name = form.querySelector(".todo-name").value;
+          todo.goal = form.querySelector(".todo-goal").value;
+          const newDays = parseInt(form.querySelector(".todo-days").value);
+
+          // Adjust progress array if days changed
+          if (newDays !== todo.days) {
+            if (newDays > todo.days) {
+              todo.progress = [
+                ...todo.progress,
+                ...Array(newDays - todo.days).fill(false),
+              ];
+            } else {
+              todo.progress = todo.progress.slice(0, newDays);
+            }
+            todo.days = newDays;
+          }
+
+          isEditingTodo = false;
+          editingTodoId = null;
+        } else {
+          // Add new todos
+          forms.forEach((form) => {
+            const days = parseInt(form.querySelector(".todo-days").value);
+            const todo = {
+              id: Date.now() + Math.random(),
+              name: form.querySelector(".todo-name").value,
+              goal: form.querySelector(".todo-goal").value,
+              days: days,
+              progress: Array(days).fill(false),
+              createdAt: new Date().toISOString(),
+            };
+            todos.push(todo);
+          });
+        }
+
         localStorage.setItem("todos", JSON.stringify(todos));
         renderTodos();
         bootstrap.Modal.getInstance(
@@ -1110,61 +1394,280 @@
         document.getElementById("todoForms").innerHTML = "";
       });
 
-      function renderTodos() {
-        const container = document.getElementById("todosContainer");
-        container.innerHTML = todos
-          .map((todo) => {
-            const completed = todo.progress.filter(Boolean).length;
-            const progress = (completed / todo.days) * 100;
-            return `
-      <div class="todo-card" data-id="${todo.id}">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 class="mb-0">${todo.name}</h5>
-              <div>
-                  <button class="btn btn-sm btn-primary edit-todo" data-id="${
-                    todo.id
-                  }">
-                      <i class="bi bi-pencil"></i>
-                  </button>
-                  <button class="btn btn-sm btn-danger delete-todo" data-id="${
-                    todo.id
-                  }">
-                      <i class="bi bi-trash"></i>
-                  </button>
-              </div>
-          </div>
-          <p class="descript-text">Goal: ${todo.goal}</p>
-          <div class="progress mb-3">
-              <div class="progress-bar" role="progressbar" style="width: ${progress}%">
-                  ${progress.toFixed(1)}%
-              </div>
-          </div>
-          <div class="checkbox-container">
-              ${todo.progress
-                .map(
-                  (checked, index) => `
-                  <div class="day-checkbox ${checked ? "checked" : ""}" 
-                       data-day="${index}" 
-                       onclick="toggleTodoDay('${todo.id}', ${index})">
-                      ${index + 1}
-                  </div>
-              `
-                )
-                .join("")}
-          </div>
-      </div>
-  `;
-          })
-          .join("");
+      // Helper function to check if all checkboxes are completed
+      function isFullyCompleted(progressArray) {
+        return progressArray.every((progress) => progress === true);
       }
 
       function toggleTodoDay(todoId, day) {
         const todo = todos.find((t) => t.id == todoId);
         if (todo) {
           todo.progress[day] = !todo.progress[day];
-          localStorage.setItem("todos", JSON.stringify(todos));
-          renderTodos();
-          updateDashboard();
+
+          // Find the todo card
+          const todoCard = document.querySelector(
+            `.todo-card[data-id="${todoId}"]`
+          );
+          const todoTitle = todoCard.querySelector("h5");
+
+          // Check if all checkboxes are completed
+          const isCompleted = isFullyCompleted(todo.progress);
+
+          // Add completed styles
+          todoCard.classList.add("completed-card");
+          todoTitle.classList.add("completed-title");
+
+          // Trigger move down animation
+          setTimeout(() => {
+            todoCard.classList.add("move-down");
+
+            // Only reorder if not fully completed
+            if (!isFullyCompleted(todo.progress)) {
+              todos = todos.filter((t) => t.id != todoId);
+              // Insert before any fully completed todos
+              const completedIndex = todos.findIndex((t) =>
+                isFullyCompleted(t.progress)
+              );
+              if (completedIndex === -1) {
+                todos.push(todo);
+              } else {
+                todos.splice(completedIndex, 0, todo);
+              }
+            } else {
+              // If fully completed, move to end
+              todos = todos.filter((t) => t.id != todoId);
+              todos.push(todo);
+            }
+
+            // Re-render after animation
+            setTimeout(() => {
+              localStorage.setItem("todos", JSON.stringify(todos));
+              renderTodos();
+              updateDashboard();
+
+              // Add move up animation to other cards
+              document.querySelectorAll(".todo-card").forEach((card) => {
+                if (card.dataset.id !== todoId) {
+                  card.classList.add("move-up");
+                }
+              });
+            }, 500);
+          }, 300);
+        }
+      }
+
+      // Updated renderTodos function
+      function renderTodos() {
+        const container = document.getElementById("todosContainer");
+        container.innerHTML = todos
+          .map((todo, index) => {
+            const completed = todo.progress.filter(Boolean).length;
+            const progress = (completed / todo.days) * 100;
+            const isCompleted = isFullyCompleted(todo.progress);
+            const failButton =
+              index === 0
+                ? `
+                <button class="btn btn-secondary btn-fail" onclick="failTodo('${
+                  todo.id
+                }')">
+                    Fail in ${todo.progress.findIndex((day) => !day) + 1}
+                </button>`
+                : "";
+            return `
+        <div class="todo-card ${
+          isCompleted ? "fully-completed-card" : ""
+        }" data-id="${todo.id}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">${todo.name}</h5>
+                <div>
+                    <button class="btn btn-sm btn-primary edit-todo" data-id="${
+                      todo.id
+                    }">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-todo" data-id="${
+                      todo.id
+                    }">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <p class="descript-text">Goal: ${todo.goal}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <p>Time: ${todo.timeStart} - ${todo.timeEnd}</p>
+                ${failButton}
+            </div>
+            <div class="progress mb-3">
+                <div class="progress-bar ${
+                  isCompleted ? "bg-success" : ""
+                }" role="progressbar" style="width: ${progress}%">
+                    ${progress.toFixed(1)}%
+                </div>
+            </div>
+            <div class="checkbox-container">
+               ${todo.progress
+                 .map(
+                   (status, index) => `
+  <div class="day-checkbox ${
+    status === true ? "checked" : status === "failed" ? "failed" : ""
+  }" 
+       data-day="${index}" 
+       onclick="toggleTodoDay('${todo.id}', ${index})">
+    ${index + 1}
+  </div>
+`
+                 )
+                 .join("")}
+            </div>
+        </div>
+      `;
+          })
+          .join("");
+        addResetButton("todos", todos, "todo");
+      }
+
+      // Add this new function
+      function addResetButton(containerId, itemsArray, itemType) {
+        const container = document.getElementById(containerId);
+        const existingButtonContainer =
+          container.querySelector(".button-container");
+        const addNewButton = container.querySelector(
+          `[data-bs-target="#${itemType}Modal"]`
+        );
+
+        // Remove existing button container if exists
+        if (existingButtonContainer) {
+          existingButtonContainer.remove();
+        }
+
+        // Create container for buttons
+        const buttonContainer = document.createElement("div");
+        buttonContainer.className =
+          "d-flex justify-content-between mb-3 button-container";
+
+        // Always add the "Add New" button
+        buttonContainer.appendChild(addNewButton);
+
+        // Check if all items are completed
+        const allCompleted =
+          itemsArray.length > 0 &&
+          itemsArray.every((item) => isFullyCompleted(item.progress));
+
+        if (allCompleted) {
+          const resetButton = document.createElement("button");
+          resetButton.className = "btn btn-warning reset-button";
+          resetButton.innerHTML = `Reset ${itemType}s`;
+          resetButton.onclick = () => {
+            showValidationModal(
+              `Are you sure you want to reset all ${itemType}s?`,
+              () => {
+                itemsArray.forEach((item) => {
+                  item.progress = Array(item.progress.length).fill(false);
+                });
+                localStorage.setItem(
+                  `${itemType}s`,
+                  JSON.stringify(itemsArray)
+                );
+                if (itemType === "habit") {
+                  renderHabits();
+                } else {
+                  renderTodos();
+                }
+                updateDashboard();
+              }
+            );
+          };
+
+          // Add the reset button to the container
+          buttonContainer.appendChild(resetButton);
+        }
+
+        // Insert the button container before the first element in the container
+        container.insertBefore(buttonContainer, container.firstChild);
+      }
+
+      function failHabit(habitId) {
+        const habit = habits.find((h) => h.id == habitId);
+        if (habit) {
+          const nextDayIndex = habit.progress.findIndex((day) => !day);
+          if (nextDayIndex !== -1) {
+            // Find the habit card and title
+            const habitCard = document.querySelector(
+              `.habit-card[data-id="${habitId}"]`
+            );
+            const habitTitle = habitCard.querySelector("h5");
+
+            habit.progress[nextDayIndex] = "failed";
+
+            // Add animation classes
+            habitCard.classList.add("failed-card");
+            habitTitle.classList.add("failed-title");
+
+            // Trigger move down animation
+            setTimeout(() => {
+              habitCard.classList.add("move-down");
+
+              // Reorder habits
+              habits = habits.filter((h) => h.id != habitId);
+              habits.push(habit);
+
+              // Re-render after animation
+              setTimeout(() => {
+                localStorage.setItem("habits", JSON.stringify(habits));
+                renderHabits();
+
+                // Add move up animation to other cards
+                document.querySelectorAll(".habit-card").forEach((card) => {
+                  if (card.dataset.id !== habitId) {
+                    card.classList.add("move-up");
+                  }
+                });
+              }, 500);
+            }, 300);
+          }
+        }
+      }
+
+      // Add failTodo function
+      function failTodo(todoId) {
+        const todo = todos.find((t) => t.id == todoId);
+        if (todo) {
+          const nextDayIndex = todo.progress.findIndex((day) => !day);
+          if (nextDayIndex !== -1) {
+            // Find the todo card and title
+            const todoCard = document.querySelector(
+              `.todo-card[data-id="${todoId}"]`
+            );
+            const todoTitle = todoCard.querySelector("h5");
+
+            todo.progress[nextDayIndex] = "failed";
+
+            // Add animation classes
+            todoCard.classList.add("completed-card");
+            todoTitle.classList.add("failed-title");
+
+            // Trigger move down animation
+            setTimeout(() => {
+              todoCard.classList.add("move-down");
+
+              // Reorder todos
+              todos = todos.filter((t) => t.id != todoId);
+              todos.push(todo);
+
+              // Re-render after animation
+              setTimeout(() => {
+                localStorage.setItem("todos", JSON.stringify(todos));
+                renderTodos();
+
+                // Add move up animation to other cards
+                document.querySelectorAll(".todo-card").forEach((card) => {
+                  if (card.dataset.id !== todoId) {
+                    card.classList.add("move-up");
+                  }
+                });
+              }, 500);
+            }, 300);
+          }
         }
       }
 
@@ -1281,16 +1784,20 @@
       document
         .getElementById("clearHistory")
         .addEventListener("click", function () {
-          if (
-            confirm(
-              "Are you sure you want to clear all transaction history? This cannot be undone."
-            )
-          ) {
-            transactions = [];
-            localStorage.setItem("transactions", JSON.stringify(transactions));
-            updateDashboard();
-            alert("Transaction history has been cleared.");
-          }
+          showValidationModal(
+            "Are you sure you want to clear all transaction history? This cannot be undone.",
+            () => {
+              transactions = [];
+              localStorage.setItem(
+                "transactions",
+                JSON.stringify(transactions)
+              );
+              updateDashboard();
+              bootstrap.Toast.getInstance(
+                document.getElementById("successToast")
+              ).show();
+            }
+          );
         });
 
       let isEditing = false;
@@ -1301,14 +1808,17 @@
         const habit = habits.find((h) => h.id == id);
         if (!habit) return;
 
-        isEditing = true; // Set mode to editing
-        editingHabitId = id; // Store the ID of the habit being edited
+        isEditing = true;
+        editingHabitId = id;
 
         const modal = new bootstrap.Modal(
           document.getElementById("habitModal")
         );
         const formsContainer = document.getElementById("habitForms");
-        formsContainer.innerHTML = ""; // Clear existing forms
+        const addButton = document.getElementById("addHabitForm");
+
+        formsContainer.innerHTML = "";
+        addButton.style.display = "none"; // Hide "Add Another" button
 
         const form = createHabitForm();
         form.querySelector(".habit-name").value = habit.name;
@@ -1320,14 +1830,22 @@
         modal.show();
       }
 
-      // Edit Todo functionality
+      let isEditingTodo = false;
+      let editingTodoId = null;
+
       function editTodo(id) {
         const todo = todos.find((t) => t.id == id);
         if (!todo) return;
 
+        isEditingTodo = true;
+        editingTodoId = id;
+
         const modal = new bootstrap.Modal(document.getElementById("todoModal"));
         const formsContainer = document.getElementById("todoForms");
-        formsContainer.innerHTML = ""; // Clear existing forms
+        const addButton = document.getElementById("addTodoForm");
+
+        formsContainer.innerHTML = "";
+        addButton.style.display = "none"; // Hide "Add Another" button
 
         const form = createTodoForm();
         form.querySelector(".todo-name").value = todo.name;
@@ -1335,73 +1853,50 @@
         form.querySelector(".todo-days").value = todo.days;
         formsContainer.appendChild(form);
 
-        // Change save button functionality for edit mode
-        const saveButton = document.getElementById("saveTodos");
-        const originalClickHandler = saveButton.onclick;
-
-        saveButton.onclick = () => {
-          todo.name = form.querySelector(".todo-name").value;
-          todo.goal = form.querySelector(".todo-goal").value;
-          const newDays = parseInt(form.querySelector(".todo-days").value);
-
-          // Adjust progress array if days changed
-          if (newDays !== todo.days) {
-            if (newDays > todo.days) {
-              todo.progress = [
-                ...todo.progress,
-                ...Array(newDays - todo.days).fill(false),
-              ];
-            } else {
-              todo.progress = todo.progress.slice(0, newDays);
-            }
-            todo.days = newDays;
-          }
-
-          localStorage.setItem("todos", JSON.stringify(todos));
-          renderTodos();
-          modal.hide();
-
-          // Restore original click handler
-          saveButton.onclick = originalClickHandler;
-        };
-
         modal.show();
       }
 
       function buyWishlistItem(id) {
         const item = wishlist.find((i) => i.id === id);
         if (item && balance >= item.price) {
-          const confirmed = confirm(
-            `Are you sure you want to buy ${item.name}?`
+          showValidationModal(
+            `Are you sure you want to buy ${item.name}?`,
+            () => {
+              balance -= item.price;
+              transactions.push({
+                type: "expense",
+                amount: item.price,
+                date: new Date().toISOString(),
+                description: `Bought wishlist item: ${item.name}`,
+              });
+              wishlist = wishlist.filter((i) => i.id !== id);
+              localStorage.setItem("wishlist", JSON.stringify(wishlist));
+              localStorage.setItem(
+                "transactions",
+                JSON.stringify(transactions)
+              );
+              animateNumber(document.getElementById("totalBalance"), balance);
+              renderWishlist();
+              updateDashboard();
+            }
           );
-          if (confirmed) {
-            balance -= item.price;
-            transactions.push({
-              type: "expense",
-              amount: item.price,
-              date: new Date().toISOString(),
-              description: `Bought wishlist item: ${item.name}`,
-            });
-            wishlist = wishlist.filter((i) => i.id !== id);
-            localStorage.setItem("wishlist", JSON.stringify(wishlist));
-            localStorage.setItem("transactions", JSON.stringify(transactions));
-            animateNumber(document.getElementById("totalBalance"), balance);
-
-            renderWishlist();
-            updateDashboard();
-          }
         } else if (balance < item.price) {
-          alert("uang lu belum cukup, bro!");
+          showValidationModal(
+            "Insufficient balance to purchase this item",
+            () => {}
+          );
         }
       }
 
       function deleteWishlistItem(id) {
-        const confirmed = confirm("Are you sure you want to delete this item?");
-        if (confirmed) {
-          wishlist = wishlist.filter((i) => i.id !== id);
-          localStorage.setItem("wishlist", JSON.stringify(wishlist));
-          renderWishlist();
-        }
+        showValidationModal(
+          "Are you sure you want to delete this item?",
+          () => {
+            wishlist = wishlist.filter((i) => i.id !== id);
+            localStorage.setItem("wishlist", JSON.stringify(wishlist));
+            renderWishlist();
+          }
+        );
       }
 
       function updateTransactionHistory() {
@@ -1452,8 +1947,92 @@
         }, stepTime);
       }
 
+      function showValidationModal(message, onConfirm) {
+        const modal = new bootstrap.Modal(
+          document.getElementById("validationModal")
+        );
+        document.getElementById("validationMessage").textContent = message;
+
+        const confirmButton = document.getElementById("validationConfirm");
+        const newConfirmHandler = () => {
+          onConfirm();
+          modal.hide();
+          confirmButton.removeEventListener("click", newConfirmHandler);
+        };
+
+        confirmButton.addEventListener("click", newConfirmHandler);
+        modal.show();
+      }
+
+      function resetAllHabits() {
+        showValidationModal(
+          "Are you sure you want to reset progress for all habits?",
+          () => {
+            habits.forEach((habit) => {
+              habit.progress = Array(habit.progress.length).fill(false);
+            });
+            localStorage.setItem("habits", JSON.stringify(habits));
+            renderHabits();
+            updateDashboard();
+          }
+        );
+      }
+
+      function deleteAllHabits() {
+        showValidationModal(
+          "Are you sure you want to delete all habits? This cannot be undone.",
+          () => {
+            habits = [];
+            localStorage.setItem("habits", JSON.stringify(habits));
+            renderHabits();
+            updateDashboard();
+          }
+        );
+      }
+
+      function resetAllTodos() {
+        showValidationModal(
+          "Are you sure you want to reset progress for all todos?",
+          () => {
+            todos.forEach((todo) => {
+              todo.progress = Array(todo.progress.length).fill(false);
+            });
+            localStorage.setItem("todos", JSON.stringify(todos));
+            renderTodos();
+            updateDashboard();
+          }
+        );
+      }
+
+      function deleteAllTodos() {
+        showValidationModal(
+          "Are you sure you want to delete all todos? This cannot be undone.",
+          () => {
+            todos = [];
+            localStorage.setItem("todos", JSON.stringify(todos));
+            renderTodos();
+            updateDashboard();
+          }
+        );
+      }
+
       // Initial setup
       document.addEventListener("DOMContentLoaded", () => {
+        document
+          .getElementById("habitModal")
+          .addEventListener("hidden.bs.modal", () => {
+            document.getElementById("addHabitForm").style.display = "block";
+            isEditing = false;
+            editingHabitId = null;
+          });
+
+        document
+          .getElementById("todoModal")
+          .addEventListener("hidden.bs.modal", () => {
+            document.getElementById("addTodoForm").style.display = "block";
+            isEditingTodo = false;
+            editingTodoId = null;
+          });
         // Add initial habit form
         document.getElementById("habitForms").appendChild(createHabitForm());
 
@@ -1531,12 +2110,15 @@
             e.target.parentElement.classList.contains("delete-habit")
           ) {
             const id = e.target.closest(".delete-habit").dataset.id;
-            if (confirm("Are you sure you want to delete this habit?")) {
-              habits = habits.filter((h) => h.id != id);
-              localStorage.setItem("habits", JSON.stringify(habits));
-              renderHabits();
-              updateDashboard();
-            }
+            showValidationModal(
+              "Are you sure you want to delete this habit?",
+              () => {
+                habits = habits.filter((h) => h.id != id);
+                localStorage.setItem("habits", JSON.stringify(habits));
+                renderHabits();
+                updateDashboard();
+              }
+            );
           }
         });
 
@@ -1548,12 +2130,15 @@
             e.target.parentElement.classList.contains("delete-todo")
           ) {
             const id = e.target.closest(".delete-todo").dataset.id;
-            if (confirm("Are you sure you want to delete this todo?")) {
-              todos = todos.filter((t) => t.id != id);
-              localStorage.setItem("todos", JSON.stringify(todos));
-              renderTodos();
-              updateDashboard();
-            }
+            showValidationModal(
+              "Are you sure you want to delete this todo?",
+              () => {
+                todos = todos.filter((t) => t.id != id);
+                localStorage.setItem("todos", JSON.stringify(todos));
+                renderTodos();
+                updateDashboard();
+              }
+            );
           }
         });
 
