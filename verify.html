@@ -47,7 +47,7 @@
       function checkForUpdates() {
         if ("serviceWorker" in navigator) {
           navigator.serviceWorker
-            .register("/service-worker.js")
+            .register("./trackers/service-worker.js")
             .then((registration) => {
               setInterval(() => {
                 registration.update();
