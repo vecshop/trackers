@@ -1,5 +1,5 @@
 const CACHE_NAME = "habit-tracker-cache-v2";
-const APP_VERSION = "2.0.2"; // Match with manifest version
+const APP_VERSION = "2.0.3"; // Match with manifest version
 const urlsToCache = [
   "/trackers/",
   "/trackers/index.html",
