@@ -1,5 +1,5 @@
 const CACHE_NAME = "habit-tracker-cache-v2";
-const APP_VERSION = "2.0.3"; // Match with manifest version
+const APP_VERSION = "2.1.0"; 
 const urlsToCache = [
   "/trackers/",
   "/trackers/index.html",
@@ -21,6 +21,14 @@ self.addEventListener("install", (event) => {
     })
   );
   self.skipWaiting(); // Immediately activate new service worker
+});
+
+self.addEventListener("fetch", (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
 });
 
 self.addEventListener("activate", (event) => {
