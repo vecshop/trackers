@@ -26,12 +26,12 @@
   "shortcuts": [
     {
       "name": "Add Habit",
-      "url": "/index.html#habits",
+      "url": "/trackers/index.html#habits",
       "description": "Add a new habit"
     },
     {
       "name": "Add Todo",
-      "url": "/index.html#todos",
+      "url": "/trackers/index.html#todos",
       "description": "Add a new todo"
     }
   ]
