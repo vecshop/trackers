@@ -5,12 +5,12 @@
   "description": "A web app to track habits and income.",
   "icons": [
     {
-      "src": "trackers/icons/128x128.ico",
+      "src": "/icons/128x128.ico",
       "sizes": "128x128",
       "type": "image/x-icon"
     },
     {
-      "src": "trackers/icons/512x512.ico",
+      "src": "/icons/512x512.ico",
       "sizes": "512x512",
       "type": "image/x-icon"
     }
@@ -26,7 +26,7 @@
   "shortcuts": [
     {
       "name": "Add Habit",
-      "url": "/trackers/index.html#habits",
+      "url": "/index.html#habits",
       "description": "Add a new habit"
     },
     {
