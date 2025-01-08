@@ -31,7 +31,7 @@
     },
     {
       "name": "Add Todo",
-      "url": "/trackers/index.html#todos",
+      "url": "/index.html#todos",
       "description": "Add a new todo"
     }
   ]
