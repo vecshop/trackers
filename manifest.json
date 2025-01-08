@@ -1,7 +1,7 @@
 {
   "name": "MY PRODUCTIVITY TRACKERS",
   "short_name": "TRACKERS",
-  "version": "2.0.3",
+  "version": "2.1.0",
   "description": "A web app to track habits and income.",
   "icons": [
     {
@@ -17,8 +17,12 @@
   ],
   "start_url": "index.html",
   "scope": "/",
-  "orientation": "portrait",
+  "orientation": "any",
+  "display": "standalone",
+  "background_color": "#e8ebf7",
+  "theme_color": "#1a237e",
   "categories": ["productivity", "lifestyle"],
+  "prefer_related_applications": false,
   "shortcuts": [
     {
       "name": "Add Habit",
